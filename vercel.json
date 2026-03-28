@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/directiva-curso-v7.1.html"
+      "destination": "/directiva-curso-v7.html"
     }
   ]
 }
