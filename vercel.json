@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/directiva-curso-v3.html"
+      "destination": "/directiva-app-v3.html"
     }
   ]
 }
