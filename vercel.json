@@ -3,8 +3,8 @@
   "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/",
-      "destination": "/directiva-curso-v7.html"
+      "source": "/(.*)",
+      "destination": "/directiva-curso-v3.html"
     }
   ]
 }
