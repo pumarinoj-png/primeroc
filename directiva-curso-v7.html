@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -679,7 +680,7 @@ async function verifyLogin(email) {
     document.getElementById('login-modal').style.opacity = '0.5';
     
     // Cargar datos del localStorage
-    const savedData = localStorage.getItem('app-data-' + email);
+    const savedData = localStorage.getItem('app-data');
     const data = savedData ? JSON.parse(savedData) : {
       familias: [],
       talleres: [],
@@ -755,11 +756,11 @@ async function saveToSheets(action, dataObj) {
     updateSyncStatus(false);
     
     // Guardar el objeto específico (ingresos, egresos, etc.)
-    const key = action + '_' + APP.user.email;
+    const key = action;
     localStorage.setItem(key, JSON.stringify(dataObj));
     
     // Guardar también el APP.data completo para persistencia
-    localStorage.setItem('app-data-' + APP.user.email, JSON.stringify(APP.data));
+    localStorage.setItem('app-data', JSON.stringify(APP.data));
     
     // Simular un pequeño delay para que se vea que está guardando
     await new Promise(resolve => setTimeout(resolve, 300));
