@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Directiva de Curso</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Syne', sans-serif; background: #f7f5f0; color: #1c1a17; min-height: 100vh; }
+.shell { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 230px; background: #1c1a17; color: white; padding: 2rem 1rem; overflow-y: auto; }
+.main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.topbar { padding: 1.5rem 2rem; background: white; border-bottom: 1px solid #ddd; }
+.inner { padding: 2rem; }
+.btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+.btn-dark { background: #1c1a17; color: white; }
+.btn-dark:hover { background: #333; }
+.moverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 300; }
+.modal { background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px; }
+.modal h2 { margin-bottom: 1rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+.form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+.error { background: #fdecea; border: 1px solid #c0392b; color: #c0392b; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; display: none; }
+.error.show { display: block; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd; }
+.stat-label { font-size: 0.8rem; color: #666; text-transform: uppercase; margin-bottom: 0.5rem; }
+.stat-value { font-size: 2rem; font-weight: 700; }
+.page { display: none; }
+.page.active { display: block; }
+nav { display: flex; flex-direction: column; gap: 0.5rem; }
+nav button { background: transparent; color: white; text-align: left; border: none; padding: 10px; border-radius: 4px; cursor: pointer; }
+nav button:hover { background: rgba(255,255,255,0.1); }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="sidebar">
+    <h2 style="margin-bottom: 2rem; font-size: 1.2rem;">📋 Directiva</h2>
+    <div style="margin-bottom: 2rem;">
+      <div id="sb-user" style="font-size: 0.9rem; margin-bottom: 0.5rem;">Usuario</div>
+      <div id="sb-role" style="font-size: 0.8rem; color: #aaa;">Apoderado</div>
+      <button class="btn btn-dark" id="btn-logout" style="width: 100%; margin-top: 1rem;">Salir</button>
+    </div>
+    
+    <nav>
+      <button id="nav-inicio">📊 Inicio</button>
+      <button id="nav-familias">👨‍👩‍👧‍👦 Familias</button>
+      <button id="nav-talleres">🎨 Talleres</button>
+      <button id="nav-comunicados">📢 Comunicados</button>
+      <div id="finanzas-nav" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #444;">
+        <p style="font-size: 0.8rem; color: #aaa; text-transform: uppercase; margin-bottom: 0.5rem;">Finanzas</p>
+        <button id="nav-ingresos">💰 Ingresos</button>
+        <button id="nav-egresos">💸 Egresos</button>
+      </div>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="page-title" style="margin: 0;">Inicio</h1>
+    </div>
+
+    <div class="inner">
+      <div id="page-inicio" class="page active">
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-label">Familias</div>
+            <div class="stat-value" id="cnt-familias">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Talleres</div>
+            <div class="stat-value" id="cnt-talleres">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Comunicados</div>
+            <div class="stat-value" id="cnt-comunicados">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-familias" class="page"><h2>Familias</h2><p>En desarrollo...</p></div>
+      <div id="page-talleres" class="page"><h2>Talleres</h2><p>En desarrollo...</p></div>
+      <div id="page-comunicados" class="page"><h2>Comunicados</h2><p>En desarrollo...</p></div>
+      <div id="page-ingresos" class="page"><h2>Ingresos</h2><p>En desarrollo...</p></div>
+      <div id="page-egresos" class="page"><h2>Egresos</h2><p>En desarrollo...</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="moverlay open" id="login-modal">
+  <div class="modal">
+    <h2>Bienvenido</h2>
+    <p style="margin-bottom: 1.5rem; color: #666;">Ingresa tu email para acceder</p>
+    
+    <div class="error" id="login-error"></div>
+    
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="tu@email.com">
+    </div>
+    
+    <button class="btn btn-dark" id="btn-acceder" style="width: 100%;">Acceder</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://styzobqvdrvvrbjtavix.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0eXpvYnF2ZHJ2dnJianRhdml4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MjY4ODUsImV4cCI6MjA5MDMwMjg4NX0.TTpzZ3QUQKaMJQz3pkRS1aRBB8qOpVaH4FnbMOYqhjE';
+const ADMIN_EMAILS = ['pumarinoj@gmail.com','fernanda.oreamuno@gmail.com','ligiaschwarz@gmail.com','magdalenagarciac@gmail.com','paulina_carvajal@hotmail.com','matias.contente@gmail.com','g.penaespinoza@gmail.com','felipeberriosmiranda@gmail.com'];
+
+let supabase = null;
+let app = { user: null, isAdmin: false, data: {} };
+
+// Inicializar Supabase
+function initSupabase() {
+  if (window.supabase && !supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✓ Supabase inicializado');
+  }
+}
+
+// Llamar cada 100ms hasta que esté listo
+const initInterval = setInterval(initSupabase, 100);
+
+// Cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+  clearInterval(initInterval);
+  initSupabase();
+  
+  // Botón Acceder
+  document.getElementById('btn-acceder').addEventListener('click', () => {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email) {
+      showError('Por favor ingresa tu email');
+      return;
+    }
+    handleLogin(email);
+  });
+  
+  // Botón Salir
+  document.getElementById('btn-logout').addEventListener('click', logout);
+  
+  // Botones de navegación
+  document.getElementById('nav-inicio').addEventListener('click', () => goPage('inicio'));
+  document.getElementById('nav-familias').addEventListener('click', () => goPage('familias'));
+  document.getElementById('nav-talleres').addEventListener('click', () => goPage('talleres'));
+  document.getElementById('nav-comunicados').addEventListener('click', () => goPage('comunicados'));
+  document.getElementById('nav-ingresos').addEventListener('click', () => goPage('ingresos'));
+  document.getElementById('nav-egresos').addEventListener('click', () => goPage('egresos'));
+  
+  // Cargar email guardado
+  const saved = localStorage.getItem('app-email');
+  if (saved) {
+    handleLogin(saved);
+  }
+});
+
+function handleLogin(email) {
+  console.log('Login:', email);
+  
+  if (!supabase) {
+    showError('Sistema no listo. Intenta de nuevo.');
+    return;
+  }
+  
+  app.user = email;
+  app.isAdmin = ADMIN_EMAILS.includes(email);
+  
+  localStorage.setItem('app-email', email);
+  document.getElementById('sb-user').textContent = email;
+  document.getElementById('sb-role').textContent = app.isAdmin ? '👑 Admin' : '📝 Apoderado';
+  
+  // Mostrar finanzas solo para admins
+  if (app.isAdmin) {
+    document.getElementById('finanzas-nav').style.display = 'block';
+  } else {
+    document.getElementById('finanzas-nav').style.display = 'none';
+  }
+  
+  // Cerrar modal
+  document.getElementById('login-modal').style.display = 'none';
+  
+  loadData();
+  console.log('✓ Login exitoso');
+}
+
+function logout() {
+  localStorage.removeItem('app-email');
+  app = { user: null, isAdmin: false, data: {} };
+  document.getElementById('login-modal').style.display = 'flex';
+  document.getElementById('login-email').value = '';
+}
+
+function goPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  
+  const titles = {
+    'inicio': 'Inicio',
+    'familias': 'Familias',
+    'talleres': 'Talleres',
+    'comunicados': 'Comunicados',
+    'ingresos': 'Ingresos',
+    'egresos': 'Egresos'
+  };
+  
+  document.getElementById('page-title').textContent = titles[page] || 'Página';
+}
+
+async function loadData() {
+  try {
+    console.log('Cargando datos...');
+    
+    const { data: familias, error: err1 } = await supabase.from('familias').select('*');
+    const { data: talleres, error: err2 } = await supabase.from('talleres').select('*');
+    const { data: comunicados, error: err3 } = await supabase.from('comunicados').select('*');
+    
+    if (err1) console.warn('Error familias:', err1);
+    if (err2) console.warn('Error talleres:', err2);
+    if (err3) console.warn('Error comunicados:', err3);
+    
+    app.data = {
+      familias: familias || [],
+      talleres: talleres || [],
+      comunicados: comunicados || []
+    };
+    
+    document.getElementById('cnt-familias').textContent = app.data.familias.length;
+    document.getElementById('cnt-talleres').textContent = app.data.talleres.length;
+    document.getElementById('cnt-comunicados').textContent = app.data.comunicados.length;
+    
+    console.log('✓ Datos cargados');
+  } catch (err) {
+    console.warn('Las tablas no existen aún (es normal):', err.message);
+  }
+}
+
+function showError(msg) {
+  const err = document.getElementById('login-error');
+  err.textContent = msg;
+  err.classList.add('show');
+  setTimeout(() => err.classList.remove('show'), 3000);
+}
+</script>
+
+</body>
+</html>
