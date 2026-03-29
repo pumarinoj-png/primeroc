@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Directiva de Curso</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f5f5f5;color:#333;height:100vh}
+.app{display:flex;height:100vh}
+.sidebar{width:250px;background:#1a1a1a;color:white;padding:20px;overflow-y:auto}
+.main{flex:1;display:flex;flex-direction:column}
+.header{background:white;padding:20px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
+.content{flex:1;padding:20px;overflow-y:auto}
+.page{display:none}
+.page.active{display:block}
+button{padding:10px 15px;margin:5px;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:14px}
+.dark{background:#1a1a1a;color:white}
+.dark:hover{background:#333}
+.green{background:#2d7a4f;color:white}
+.green:hover{background:#245f3e}
+.red{background:#c0392b;color:white}
+.red:hover{background:#a93226}
+.ghost{background:transparent;border:1px solid #ddd;color:#333}
+.ghost:hover{background:#f0f0f0}
+.nav-item{display:block;width:100%;text-align:left;background:0;border:0;color:white;padding:10px;margin:5px 0;cursor:pointer}
+.nav-item:hover{background:rgba(255,255,255,0.1)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:999;overflow-y:auto}
+.modal-bg.hidden{display:none}
+.modal{background:white;padding:30px;border-radius:8px;width:90%;max-width:600px;box-shadow:0 4px 20px rgba(0,0,0,0.2);margin:20px auto}
+.modal h2{margin-bottom:20px;font-size:24px}
+.modal h3{margin-top:20px;margin-bottom:10px;font-size:16px;border-bottom:2px solid #eee;padding-bottom:10px}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;margin-bottom:5px;font-weight:600;font-size:13px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-size:14px;font-family:Arial}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.error{background:#fee;border:1px solid #c33;color:#c00;padding:10px;border-radius:4px;margin-bottom:15px;display:none}
+.error.show{display:block}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px;margin-bottom:30px}
+.stat{background:white;padding:20px;border-radius:8px;text-align:center;border:1px solid #ddd}
+.num{font-size:36px;font-weight:700;color:#2d7a4f;margin:10px 0}
+.label{color:#999;font-size:12px;text-transform:uppercase}
+h2{margin-bottom:20px;color:#1a1a1a;font-size:28px}
+h3{margin-bottom:15px;color:#1a1a1a}
+p{color:#666}
+.table{width:100%;border-collapse:collapse;background:white;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.table th{background:#f5f5f5;padding:12px;text-align:left;font-weight:600;border-bottom:2px solid #ddd}
+.table td{padding:12px;border-bottom:1px solid #eee}
+.table tr:hover{background:#f9f9f9}
+.table-actions{display:flex;gap:5px}
+.badge{display:inline-block;padding:4px 8px;border-radius:12px;font-size:12px;font-weight:600}
+.badge-pending{background:#fff3cd;color:#856404}
+.badge-completed{background:#d4edda;color:#155724}
+.item-card{background:white;padding:15px;border-radius:4px;margin-bottom:15px;border-left:4px solid #2d7a4f;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.item-card h3{margin-top:0}
+.actions{margin-top:15px;display:flex;gap:10px}
+.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.dynamic-section{background:#f9f9f9;padding:15px;border-radius:4px;margin-bottom:15px}
+.dynamic-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-end}
+.dynamic-row input{flex:1}
+.dynamic-row button{margin:0}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar">
+    <h2 style="margin-bottom:30px;font-size:20px">📋 Directiva</h2>
+    <div style="margin-bottom:30px;border-bottom:1px solid #444;padding-bottom:20px">
+      <div id="user" style="font-size:14px;margin-bottom:5px">Usuario</div>
+      <div id="role" style="font-size:12px;color:#aaa">Apoderado</div>
+    </div>
+    <nav>
+      <button class="nav-item" onclick="goTo('inicio')">📊 Inicio</button>
+      <button class="nav-item" onclick="goTo('familias')">👨‍👩‍👧‍👦 Familias</button>
+      <button class="nav-item" onclick="goTo('talleres')">🎨 Talleres</button>
+      <button class="nav-item" onclick="goTo('comunicados')">📢 Comunicados</button>
+      <div id="fin-nav" style="display:none;margin-top:20px;padding-top:20px;border-top:1px solid #444">
+        <p style="font-size:12px;color:#999;text-transform:uppercase;margin-bottom:10px">Finanzas</p>
+        <button class="nav-item" onclick="goTo('ingresos')">💰 Ingresos</button>
+        <button class="nav-item" onclick="goTo('egresos')">💸 Egresos</button>
+      </div>
+    </nav>
+    <button class="dark" onclick="logout()" style="width:100%;margin-top:20px">Salir</button>
+  </div>
+
+  <div class="main">
+    <div class="header">
+      <h1 id="title" style="margin:0;font-size:28px">Inicio</h1>
+      <div style="font-size:12px;color:#999" id="user-info"></div>
+    </div>
+    <div class="content">
+      <div id="inicio" class="page active">
+        <div class="stats">
+          <div class="stat"><div class="label">Familias</div><div class="num" id="n-fam">0</div></div>
+          <div class="stat"><div class="label">Talleres</div><div class="num" id="n-tal">0</div></div>
+          <div class="stat"><div class="label">Comunicados</div><div class="num" id="n-com">0</div></div>
+        </div>
+      </div>
+
+      <div id="familias" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h2 style="margin:0">Familias</h2>
+          <button class="green" onclick="openFamiliaForm()">+ Agregar Familia</button>
+        </div>
+        <table class="table">
+          <thead>
+            <tr><th>Apellidos, Nombre</th><th>Apoderado</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="familias-list"></tbody>
+        </table>
+      </div>
+
+      <div id="talleres" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h2 style="margin:0">Talleres</h2>
+          <button class="green" onclick="openTallerForm()">+ Crear Taller</button>
+        </div>
+        <div id="talleres-list"></div>
+      </div>
+
+      <div id="comunicados" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h2 style="margin:0">Comunicados</h2>
+          <button class="green" onclick="openComunicadoForm()">+ Nuevo Comunicado</button>
+        </div>
+        <div id="comunicados-list"></div>
+      </div>
+
+      <div id="ingresos" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h2 style="margin:0">Ingresos</h2>
+          <button class="green" onclick="openIngresoForm()">+ Registrar Ingreso</button>
+        </div>
+        <table class="table">
+          <thead>
+            <tr><th>Fecha</th><th>Concepto</th><th>Familia</th><th>Monto</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="ingresos-list"></tbody>
+        </table>
+      </div>
+
+      <div id="egresos" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h2 style="margin:0">Egresos</h2>
+          <button class="green" onclick="openEgresoForm()">+ Registrar Egreso</button>
+        </div>
+        <table class="table">
+          <thead>
+            <tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Monto</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="egresos-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="login-modal">
+  <div class="modal">
+    <h2>Bienvenido</h2>
+    <p style="color:#666;margin-bottom:20px">Ingresa tu email para acceder</p>
+    <div class="error" id="err"></div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="mail" placeholder="tu@email.com" autocomplete="off">
+    </div>
+    <button class="dark" onclick="login()" style="width:100%">Acceder</button>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="familia-modal">
+  <div class="modal">
+    <h2>Familia</h2>
+    <div class="error" id="familia-error"></div>
+    <h3>Información del Apoderado</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Apellidos</label><input type="text" id="fam-apellidos"></div>
+      <div class="form-group"><label>Nombre</label><input type="text" id="fam-nombre"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email</label><input type="email" id="fam-email"></div>
+      <div class="form-group"><label>Teléfono</label><input type="tel" id="fam-telefono"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Profesión</label><input type="text" id="fam-profesion"></div>
+      <div class="form-group"><label>Aporte al resto desde mi trabajo</label><input type="text" id="fam-aporte"></div>
+    </div>
+    <h3>Información del Alumno/a</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input type="text" id="fam-alumno-nombre"></div>
+      <div class="form-group"><label>Fecha de Nacimiento</label><input type="date" id="fam-alumno-fecha"></div>
+    </div>
+    <h3>Hermanos/as</h3>
+    <div id="hermanos-container"></div>
+    <button class="ghost" onclick="agregarHermano()" style="width:100%;margin-bottom:15px">+ Agregar Hermano/a</button>
+    <h3>Taller</h3>
+    <div class="form-group">
+      <label>Taller del Alumno/a</label>
+      <select id="fam-taller"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" onclick="closeFamiliaForm()">Cancelar</button>
+      <button class="green" onclick="saveFamilia()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="taller-modal">
+  <div class="modal">
+    <h2>Crear Taller</h2>
+    <div class="error" id="taller-error"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input type="text" id="tal-nombre"></div>
+      <div class="form-group"><label>Icono (emoji)</label><input type="text" id="tal-icono" maxlength="2" placeholder="🎨"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Día</label><select id="tal-dia"><option value="">Seleccionar</option><option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Miércoles">Miércoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option></select></div>
+      <div class="form-group"><label>Hora Inicio</label><input type="time" id="tal-hora-inicio"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Hora Fin</label><input type="time" id="tal-hora-fin"></div>
+    </div>
+    <div class="form-group"><label>Descripción</label><textarea id="tal-descripcion" rows="3"></textarea></div>
+    <div class="modal-actions">
+      <button class="ghost" onclick="closeTallerForm()">Cancelar</button>
+      <button class="green" onclick="saveTaller()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="comunicado-modal">
+  <div class="modal">
+    <h2>Comunicado</h2>
+    <div class="error" id="comunicado-error"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha</label><input type="date" id="com-fecha"></div>
+      <div class="form-group"><label>Asunto</label><input type="text" id="com-asunto"></div>
+    </div>
+    <div class="form-group"><label>Tipo</label><select id="com-tipo" onchange="toggleComunicadoFields()"><option value="">Seleccionar</option><option value="puntual">Evento Puntual</option><option value="duradero">Evento Duradero</option></select></div>
+    <div id="com-fecha-event-field" class="form-group" style="display:none"><label>Fecha/Hora del Evento</label><input type="datetime-local" id="com-fecha-evento"></div>
+    <div id="com-caracteristica-field" class="form-group" style="display:none"><label>Característica</label><input type="text" id="com-caracteristica" placeholder="Ej: Durante el mes de mayo"></div>
+    <div class="form-group"><label>Descripción</label><textarea id="com-descripcion" rows="4"></textarea></div>
+    <div class="modal-actions">
+      <button class="ghost" onclick="closeComunicadoForm()">Cancelar</button>
+      <button class="green" onclick="saveComunicado()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="ingreso-modal">
+  <div class="modal">
+    <h2>Registrar Ingreso</h2>
+    <div class="error" id="ingreso-error"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha</label><input type="date" id="ing-fecha"></div>
+      <div class="form-group"><label>Concepto</label><input type="text" id="ing-concepto"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Familia</label><select id="ing-familia"></select></div>
+      <div class="form-group"><label>Monto</label><input type="number" id="ing-monto"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" onclick="closeIngresoForm()">Cancelar</button>
+      <button class="green" onclick="saveIngreso()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="egreso-modal">
+  <div class="modal">
+    <h2>Registrar Egreso</h2>
+    <div class="error" id="egreso-error"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha</label><input type="date" id="egr-fecha"></div>
+      <div class="form-group"><label>Concepto</label><input type="text" id="egr-concepto"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Categoría</label><input type="text" id="egr-categoria"></div>
+      <div class="form-group"><label>Monto</label><input type="number" id="egr-monto"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" onclick="closeEgresoForm()">Cancelar</button>
+      <button class="green" onclick="saveEgreso()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMINS = ['pumarinoj@gmail.com','fernanda.oreamuno@gmail.com','ligiaschwarz@gmail.com','magdalenagarciac@gmail.com','paulina_carvajal@hotmail.com','matias.contente@gmail.com','g.penaespinoza@gmail.com','felipeberriosmiranda@gmail.com'];
+
+let user = {email: null, admin: false};
+let data = {familias: [], talleres: [], comunicados: [], ingresos: [], egresos: []};
+
+window.addEventListener('load', function() {
+  const saved = localStorage.getItem('directiva-email');
+  if(saved) auth(saved);
+  document.getElementById('mail').addEventListener('keypress', function(e) {
+    if(e.key === 'Enter') login();
+  });
+});
+
+function login() {
+  const mail = document.getElementById('mail').value.trim();
+  if(!mail) {
+    showError('Por favor ingresa tu email', 'err');
+    return;
+  }
+  auth(mail);
+}
+
+function auth(mail) {
+  user.email = mail;
+  user.admin = ADMINS.includes(mail);
+  localStorage.setItem('directiva-email', mail);
+  document.getElementById('user').textContent = mail;
+  document.getElementById('role').textContent = user.admin ? '👑 Admin' : '📝 Apoderado';
+  document.getElementById('fin-nav').style.display = user.admin ? 'block' : 'none';
+  document.getElementById('login-modal').classList.add('hidden');
+  loadData();
+}
+
+function logout() {
+  localStorage.removeItem('directiva-email');
+  user = {email: null, admin: false};
+  document.getElementById('login-modal').classList.remove('hidden');
+  document.getElementById('mail').value = '';
+}
+
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.getElementById(page).classList.add('active');
+  const titles = {'inicio':'Inicio','familias':'Familias','talleres':'Talleres','comunicados':'Comunicados','ingresos':'Ingresos','egresos':'Egresos'};
+  document.getElementById('title').textContent = titles[page] || 'Página';
+  if(page === 'familias') renderFamilias();
+  else if(page === 'talleres') renderTalleres();
+  else if(page === 'comunicados') renderComunicados();
+  else if(page === 'ingresos') renderIngresos();
+  else if(page === 'egresos') renderEgresos();
+}
+
+function loadData() {
+  data = JSON.parse(localStorage.getItem('directiva-data') || '{"familias":[],"talleres":[],"comunicados":[],"ingresos":[],"egresos":[]}');
+  updateCounts();
+}
+
+function saveData() {
+  localStorage.setItem('directiva-data', JSON.stringify(data));
+  updateCounts();
+}
+
+function updateCounts() {
+  document.getElementById('n-fam').textContent = data.familias.length;
+  document.getElementById('n-tal').textContent = data.talleres.length;
+  document.getElementById('n-com').textContent = data.comunicados.length;
+}
+
+function openFamiliaForm() {
+  document.getElementById('fam-apellidos').value = '';
+  document.getElementById('fam-nombre').value = '';
+  document.getElementById('fam-email').value = user.email;
+  document.getElementById('fam-telefono').value = '';
+  document.getElementById('fam-profesion').value = '';
+  document.getElementById('fam-aporte').value = '';
+  document.getElementById('fam-alumno-nombre').value = '';
+  document.getElementById('fam-alumno-fecha').value = '';
+  document.getElementById('fam-taller').innerHTML = '<option value="">Seleccionar</option>' + (data.talleres || []).map(t => `<option value="${t.id}">${t.nombre}</option>`).join('');
+  document.getElementById('hermanos-container').innerHTML = '';
+  document.getElementById('familia-modal').classList.remove('hidden');
+}
+
+function closeFamiliaForm() {
+  document.getElementById('familia-modal').classList.add('hidden');
+}
+
+function agregarHermano() {
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.innerHTML = `<input type="text" placeholder="Nombre"><input type="number" placeholder="Edad"><select><option value="">Seleccionar</option><option value="jardín">Jardín</option><option value="prekinder">Prekinder</option><option value="kinder">Kinder</option><option value="1°">1°</option><option value="2°">2°</option><option value="3°">3°</option><option value="4°">4°</option><option value="5°">5°</option><option value="6°">6°</option><option value="7°">7°</option><option value="8°">8°</option><option value="1° Medio">1° Medio</option><option value="2° Medio">2° Medio</option><option value="3° Medio">3° Medio</option><option value="4° Medio">4° Medio</option><option value="Universidad">Universidad</option></select><button class="red" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('hermanos-container').appendChild(div);
+}
+
+function saveFamilia() {
+  const hermanos = [];
+  document.querySelectorAll('#hermanos-container .dynamic-row').forEach(row => {
+    const inputs = row.querySelectorAll('input, select');
+    if(inputs[0].value) hermanos.push({nombre: inputs[0].value, edad: inputs[1].value, nivel: inputs[2].value});
+  });
+  const fam = {
+    id: 'fam-' + Date.now(),
+    apellidos: document.getElementById('fam-apellidos').value,
+    nombre: document.getElementById('fam-nombre').value,
+    email: document.getElementById('fam-email').value,
+    telefono: document.getElementById('fam-telefono').value,
+    profesion: document.getElementById('fam-profesion').value,
+    aporte: document.getElementById('fam-aporte').value,
+    alumno_nombre: document.getElementById('fam-alumno-nombre').value,
+    alumno_fecha: document.getElementById('fam-alumno-fecha').value,
+    hermanos: hermanos,
+    taller_id: document.getElementById('fam-taller').value
+  };
+  data.familias.push(fam);
+  saveData();
+  closeFamiliaForm();
+  renderFamilias();
+}
+
+function renderFamilias() {
+  let familias = data.familias || [];
+  if(!user.admin) familias = familias.filter(f => f.email === user.email);
+  const html = familias.map(f => `<tr><td>${f.apellidos}, ${f.alumno_nombre}</td><td>${f.nombre}</td><td><button class="ghost" onclick="alert('Editar')">Editar</button></td></tr>`).join('');
+  document.getElementById('familias-list').innerHTML = html || '<tr><td colspan="3" style="text-align:center;color:#999">No hay familias</td></tr>';
+}
+
+function openTallerForm() {
+  document.getElementById('tal-nombre').value = '';
+  document.getElementById('tal-icono').value = '';
+  document.getElementById('tal-dia').value = '';
+  document.getElementById('tal-hora-inicio').value = '';
+  document.getElementById('tal-hora-fin').value = '';
+  document.getElementById('tal-descripcion').value = '';
+  document.getElementById('taller-modal').classList.remove('hidden');
+}
+
+function closeTallerForm() {
+  document.getElementById('taller-modal').classList.add('hidden');
+}
+
+function saveTaller() {
+  const tal = {
+    id: 'tal-' + Date.now(),
+    nombre: document.getElementById('tal-nombre').value,
+    icono: document.getElementById('tal-icono').value,
+    dia: document.getElementById('tal-dia').value,
+    hora_inicio: document.getElementById('tal-hora-inicio').value,
+    hora_fin: document.getElementById('tal-hora-fin').value,
+    descripcion: document.getElementById('tal-descripcion').value
+  };
+  data.talleres.push(tal);
+  saveData();
+  closeTallerForm();
+  renderTalleres();
+}
+
+function renderTalleres() {
+  const html = (data.talleres || []).sort((a,b) => {
+    const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+    return dias.indexOf(a.dia || '') - dias.indexOf(b.dia || '');
+  }).map(t => `<div class="item-card"><h3>${t.icono} ${t.nombre}</h3><p><strong>${t.dia}</strong> ${t.hora_inicio} - ${t.hora_fin}</p><p>${t.descripcion}</p></div>`).join('');
+  document.getElementById('talleres-list').innerHTML = html || '<p style="color:#999">No hay talleres</p>';
+}
+
+function toggleComunicadoFields() {
+  const tipo = document.getElementById('com-tipo').value;
+  document.getElementById('com-fecha-event-field').style.display = tipo === 'puntual' ? 'block' : 'none';
+  document.getElementById('com-caracteristica-field').style.display = tipo === 'duradero' ? 'block' : 'none';
+}
+
+function openComunicadoForm() {
+  document.getElementById('com-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('com-asunto').value = '';
+  document.getElementById('com-tipo').value = '';
+  document.getElementById('com-descripcion').value = '';
+  toggleComunicadoFields();
+  document.getElementById('comunicado-modal').classList.remove('hidden');
+}
+
+function closeComunicadoForm() {
+  document.getElementById('comunicado-modal').classList.add('hidden');
+}
+
+function saveComunicado() {
+  const tipo = document.getElementById('com-tipo').value;
+  const com = {
+    id: 'com-' + Date.now(),
+    fecha: document.getElementById('com-fecha').value,
+    asunto: document.getElementById('com-asunto').value,
+    tipo: tipo,
+    fecha_evento: tipo === 'puntual' ? document.getElementById('com-fecha-evento').value : null,
+    caracteristica: tipo === 'duradero' ? document.getElementById('com-caracteristica').value : null,
+    descripcion: document.getElementById('com-descripcion').value
+  };
+  data.comunicados.push(com);
+  saveData();
+  closeComunicadoForm();
+  renderComunicados();
+}
+
+function renderComunicados() {
+  const html = (data.comunicados || []).map(c => {
+    let info = '';
+    if(c.tipo === 'puntual') info = `<p><strong>Evento:</strong> ${new Date(c.fecha_evento).toLocaleString('es-CL')}</p>`;
+    else if(c.tipo === 'duradero') info = `<p><strong>Periodo:</strong> ${c.caracteristica}</p>`;
+    return `<div class="item-card"><p style="color:#999;font-size:12px">${new Date(c.fecha).toLocaleDateString('es-CL')}</p><h3>${c.asunto}</h3>${info}<p>${c.descripcion}</p></div>`;
+  }).join('');
+  document.getElementById('comunicados-list').innerHTML = html || '<p style="color:#999">No hay comunicados</p>';
+}
+
+function openIngresoForm() {
+  document.getElementById('ing-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('ing-concepto').value = '';
+  document.getElementById('ing-monto').value = '';
+  document.getElementById('ing-familia').innerHTML = '<option value="">Seleccionar</option>' + (data.familias || []).map(f => `<option value="${f.id}">${f.alumno_nombre}</option>`).join('');
+  document.getElementById('ingreso-modal').classList.remove('hidden');
+}
+
+function closeIngresoForm() {
+  document.getElementById('ingreso-modal').classList.add('hidden');
+}
+
+function saveIngreso() {
+  const ing = {
+    id: 'ing-' + Date.now(),
+    fecha: document.getElementById('ing-fecha').value,
+    concepto: document.getElementById('ing-concepto').value,
+    familia_id: document.getElementById('ing-familia').value,
+    monto: parseInt(document.getElementById('ing-monto').value) || 0
+  };
+  data.ingresos.push(ing);
+  saveData();
+  closeIngresoForm();
+  renderIngresos();
+}
+
+function renderIngresos() {
+  let ingresos = data.ingresos || [];
+  if(!user.admin) ingresos = ingresos.filter(i => {
+    const fam = data.familias.find(f => f.id === i.familia_id);
+    return fam && fam.email === user.email;
+  });
+  let total = 0;
+  const html = ingresos.map(i => {
+    total += i.monto || 0;
+    const fam = data.familias.find(f => f.id === i.familia_id);
+    return `<tr><td>${new Date(i.fecha).toLocaleDateString('es-CL')}</td><td>${i.concepto}</td><td>${fam ? fam.alumno_nombre : 'Sin familia'}</td><td>${(i.monto || 0).toLocaleString('es-CL')} CLP</td><td><button class="red" onclick="deleteIngreso('${i.id}')">Eliminar</button></td></tr>`;
+  }).join('');
+  const totalRow = html ? `<tr style="background:#d4edda;font-weight:600"><td colspan="3">TOTAL INGRESOS</td><td>${total.toLocaleString('es-CL')} CLP</td><td></td></tr>` : '';
+  document.getElementById('ingresos-list').innerHTML = totalRow + html || '<tr><td colspan="5" style="text-align:center;color:#999">No hay ingresos</td></tr>';
+}
+
+function deleteIngreso(id) {
+  data.ingresos = data.ingresos.filter(i => i.id !== id);
+  saveData();
+  renderIngresos();
+}
+
+function openEgresoForm() {
+  document.getElementById('egr-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('egr-concepto').value = '';
+  document.getElementById('egr-categoria').value = '';
+  document.getElementById('egr-monto').value = '';
+  document.getElementById('egreso-modal').classList.remove('hidden');
+}
+
+function closeEgresoForm() {
+  document.getElementById('egreso-modal').classList.add('hidden');
+}
+
+function saveEgreso() {
+  const egr = {
+    id: 'egr-' + Date.now(),
+    fecha: document.getElementById('egr-fecha').value,
+    concepto: document.getElementById('egr-concepto').value,
+    categoria: document.getElementById('egr-categoria').value,
+    monto: parseInt(document.getElementById('egr-monto').value) || 0
+  };
+  data.egresos.push(egr);
+  saveData();
+  closeEgresoForm();
+  renderEgresos();
+}
+
+function renderEgresos() {
+  let egresos = data.egresos || [];
+  let total = 0;
+  const html = egresos.map(e => {
+    total += e.monto || 0;
+    return `<tr><td>${new Date(e.fecha).toLocaleDateString('es-CL')}</td><td>${e.concepto}</td><td>${e.categoria}</td><td>${(e.monto || 0).toLocaleString('es-CL')} CLP</td><td><button class="red" onclick="deleteEgreso('${e.id}')">Eliminar</button></td></tr>`;
+  }).join('');
+  const totalRow = html ? `<tr style="background:#fdecea;font-weight:600"><td colspan="3">TOTAL EGRESOS</td><td>${total.toLocaleString('es-CL')} CLP</td><td></td></tr>` : '';
+  document.getElementById('egresos-list').innerHTML = totalRow + html || '<tr><td colspan="5" style="text-align:center;color:#999">No hay egresos</td></tr>';
+}
+
+function deleteEgreso(id) {
+  data.egresos = data.egresos.filter(e => e.id !== id);
+  saveData();
+  renderEgresos();
+}
+
+function showError(msg, id) {
+  const e = document.getElementById(id);
+  e.textContent = msg;
+  e.classList.add('show');
+  setTimeout(() => e.classList.remove('show'), 3000);
+}
+</script>
+
+</body>
+</html>
